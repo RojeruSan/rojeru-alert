@@ -1,0 +1,67 @@
+{
+  "name": "rojeru-alert",
+  "version": "1.0.0",
+  "description": "Beautiful, customizable and framework-agnostic alert system for JavaScript with amazing visual effects",
+  "main": "dist/rojeru-alert.cjs.js",
+  "module": "dist/rojeru-alert.esm.js",
+  "browser": "dist/rojeru-alert.global.js",
+  "unpkg": "dist/rojeru-alert.global.min.js",
+  "jsdelivr": "dist/rojeru-alert.global.min.js",
+  "types": "dist/rojeru-alert.d.ts",
+  "files": [
+    "dist/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "build:all": "npm run build",
+    "test": "echo \"No tests specified\" && exit 0",
+    "prepublishOnly": "npm run build",
+    "release": "npm version patch && npm publish"
+  },
+  "keywords": [
+    "alert",
+    "modal",
+    "dialog",
+    "popup",
+    "notification",
+    "toast",
+    "javascript",
+    "vanilla",
+    "framework-agnostic",
+    "ui",
+    "ux",
+    "confetti",
+    "effects",
+    "rojeru",
+    "alert-system"
+  ],
+  "author": "Rogelio Urieta Camacho (RojeruSan)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rojerusan/rojeru-alert.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rojerusan/rojeru-alert/issues"
+  },
+  "homepage": "https://github.com/rojerusan/rojeru-alert#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "rollup": "^2.79.2",
+    "rollup-plugin-css-only": "^4.5.0",
+    "rollup-plugin-terser": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=12.0.0",
+    "npm": ">=6.0.0"
+  },
+  "browserslist": [
+    "> 0.5%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
