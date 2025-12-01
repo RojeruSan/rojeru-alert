@@ -268,23 +268,272 @@ const options = {
 };
 ```
 
-## Plugins 🔌
+## React ✅
 ```
-RoAlert.use(RojeruAlertPluginAnalytics, {
-  trackAll: true
-});
+npm install rojeru-alert
+// App.jsx
+import React from 'react';
+import RojeruAlert from 'rojeru-alert';
+import 'rojeru-alert/dist/rojeru-alert.css';
+
+function App() {
+  const showAlert = () => {
+    // Usar directamente
+    RoAlert.success('¡Desde React!', 'Funciona perfectamente');
+  };
+
+  return (
+    <div>
+      <button onClick={showAlert}>
+        Mostrar Alerta
+      </button>
+    </div>
+  );
+}
+
+export default App;
 ```
-## Crear tu propio plugin
+## Hook personalizado para React
 ```
-const MyPlugin = {
-  name: 'my-plugin',
-  install: (alert, options) => {
-    // Extender la funcionalidad
-    alert.myCustomMethod = function() {
-      console.log('Plugin activado!');
+// hooks/useAlert.js
+import { useEffect, useRef } from 'react';
+import RojeruAlert from 'rojeru-alert';
+import 'rojeru-alert/dist/rojeru-alert.css';
+
+export const useAlert = () => {
+  const alertRef = useRef(null);
+  
+  useEffect(() => {
+    // Crear instancia una sola vez
+    if (!alertRef.current) {
+      alertRef.current = new RojeruAlert();
+    }
+    
+    // Limpiar al desmontar
+    return () => {
+      if (alertRef.current) {
+        alertRef.current.clearAllStack();
+        alertRef.current.clearTimeouts();
+      }
     };
+  }, []);
+  
+  return alertRef.current;
+};
+
+// Uso en componente
+import { useAlert } from './hooks/useAlert';
+
+function MyComponent() {
+  const alert = useAlert();
+  
+  const handleClick = () => {
+    alert.successWithConfetti('React Hook', 'Usando hook personalizado');
+  };
+  
+  return <button onClick={handleClick}>Mostrar</button>;
+}
+```
+## Context Provider para React
+```
+// context/AlertContext.jsx
+import React, { createContext, useContext, useRef } from 'react';
+import RojeruAlert from 'rojeru-alert';
+import 'rojeru-alert/dist/rojeru-alert.css';
+
+const AlertContext = createContext(null);
+
+export const AlertProvider = ({ children }) => {
+  const alertRef = useRef(null);
+  
+  if (!alertRef.current) {
+    alertRef.current = new RojeruAlert();
+  }
+  
+  return (
+    <AlertContext.Provider value={alertRef.current}>
+      {children}
+    </AlertContext.Provider>
+  );
+};
+
+export const useAlert = () => {
+  const context = useContext(AlertContext);
+  if (!context) {
+    throw new Error('useAlert debe usarse dentro de AlertProvider');
+  }
+  return context;
+};
+
+// En tu App.jsx
+import { AlertProvider } from './context/AlertContext';
+
+function App() {
+  return (
+    <AlertProvider>
+      <MyComponent />
+    </AlertProvider>
+  );
+}
+```
+## Vue.js 3 ✅
+```
+// plugins/rojeru-alert.js
+import RojeruAlert from 'rojeru-alert';
+import 'rojeru-alert/dist/rojeru-alert.css';
+
+const RojeruAlertPlugin = {
+  install(app, options = {}) {
+    // Crear instancia
+    const alert = new RojeruAlert(options);
+    
+    // Inyectar globalmente en Options API
+    app.config.globalProperties.$alert = alert;
+    
+    // Proveer para Composition API
+    app.provide('rojeruAlert', alert);
+    
+    // Directiva personalizada
+    app.directive('alert', {
+      mounted(el, binding) {
+        el.addEventListener('click', () => {
+          const { type = 'info', title, message } = binding.value;
+          alert[type](title, message);
+        });
+      }
+    });
   }
 };
 
-RoAlert.use(MyPlugin);
+export default RojeruAlertPlugin;
+
+// En main.js
+import { createApp } from 'vue';
+import App from './App.vue';
+import RojeruAlertPlugin from './plugins/rojeru-alert';
+
+const app = createApp(App);
+app.use(RojeruAlertPlugin);
+app.mount('#app');
 ```
+## Uso en componentes Vue
+```
+<!-- Options API -->
+<template>
+  <button @click="showSuccess">Mostrar Alerta</button>
+</template>
+
+<script>
+export default {
+  methods: {
+    showSuccess() {
+      this.$alert.success('¡Desde Vue!', 'Options API funcionando');
+    }
+  }
+}
+</script>
+
+<!-- Composition API -->
+<template>
+  <button @click="showAlert">Mostrar</button>
+  <button v-alert="{ type: 'info', title: 'Directiva', message: 'Usando directiva' }">
+    Usar Directiva
+  </button>
+</template>
+
+<script setup>
+import { inject } from 'vue';
+
+const alert = inject('rojeruAlert');
+
+const showAlert = () => {
+  alert.successWithConfetti('Composition API', '¡Funciona perfectamente!');
+};
+</script>
+```
+## Angular ✅
+```
+npm install rojeru-alert
+// services/alert.service.ts
+import { Injectable } from '@angular/core';
+import RojeruAlert from 'rojeru-alert';
+import 'rojeru-alert/dist/rojeru-alert.css';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AlertService {
+  private alert: RojeruAlert;
+
+  constructor() {
+    this.alert = new RojeruAlert();
+    // Configurar opciones globales
+    this.alert.changeLanguage('es');
+  }
+
+  success(title: string, message: string) {
+    return this.alert.success(title, message);
+  }
+
+  error(title: string, message: string) {
+    return this.alert.error(title, message);
+  }
+
+  warning(title: string, message: string) {
+    return this.alert.warning(title, message);
+  }
+
+  info(title: string, message: string) {
+    return this.alert.info(title, message);
+  }
+
+  question(title: string, message: string) {
+    return this.alert.question(title, message);
+  }
+
+  // Métodos con efectos
+  successWithConfetti(title: string, message: string) {
+    return this.alert.successWithConfetti(title, message);
+  }
+
+  // Toast
+  toast(message: string, type: string = 'info') {
+    return this.alert.toast(message, 3000, type);
+  }
+}
+
+// En app.module.ts
+import { AlertService } from './services/alert.service';
+
+@NgModule({
+  providers: [AlertService]
+})
+export class AppModule { }
+```
+## Uso en componente Angular
+```
+// app.component.ts
+import { Component } from '@angular/core';
+import { AlertService } from './services/alert.service';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <button (click)="showSuccess()">Mostrar Éxito</button>
+    <button (click)="showConfetti()">¡Con Confeti!</button>
+  `
+})
+export class AppComponent {
+  constructor(private alertService: AlertService) {}
+
+  showSuccess() {
+    this.alertService.success('Angular', 'Funciona perfectamente con Angular');
+  }
+
+  showConfetti() {
+    this.alertService.successWithConfetti('¡Felicidades!', 'Logro desbloqueado en Angular');
+  }
+}
+```
+
+## Funciona tambien con Svelte ✅, Next.js ✅, Nuxt.js ✅, SvelteKit ✅, Node.js (Electron, NW.js) ✅, TypeScript ✅
