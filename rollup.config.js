@@ -10,7 +10,7 @@ const version = '1.0.0';
 const banner = `/*!
  * RojeruAlert v${version}
  * https://github.com/rojerusan/rojeru-alert
- * (c) 2024 Rogelio Urieta Camacho (RojeruSan)
+ * (c) 2025 Rogelio Urieta Camacho (RojeruSan)
  * Released under the MIT License
  */`;
 
