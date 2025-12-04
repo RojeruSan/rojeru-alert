@@ -22,10 +22,10 @@ Una librería de alertas JavaScript moderna, personalizable y con efectos visual
 ### CDN (Recomendado para HTML puro)
 ```html
 <!-- CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rojeru-alert/dist/rojeru-alert.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rojeru-alert@1.0.4/dist/rojeru-alert.min.css">
 
 <!-- JavaScript -->
-<script src="https://cdn.jsdelivr.net/npm/rojeru-alert/dist/rojeru-alert.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rojeru-alert@1.0.4/dist/rojeru-alert.global.min.js"></script>
 ```
 ## NPM
 npm install rojeru-alert
