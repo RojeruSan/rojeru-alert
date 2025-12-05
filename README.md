@@ -1,7 +1,7 @@
 # RojeruAlert 🚀
 
 Una librería de alertas JavaScript moderna, personalizable y con efectos visuales impresionantes.
-
+[![Donar](https://img.shields.io/badge/Donar-PayPal-00457C?logo=paypal&style=for-the-badge)](https://www.paypal.com/donate/?cmd=_s-xclick&hosted_button_id=JLWEAETTE3H28&ssrt=1764941769118)
 ## Características ✨
 
 - ✅ **Múltiples tipos de alertas**: success, error, warning, info, question
