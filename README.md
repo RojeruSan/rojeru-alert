@@ -30,7 +30,7 @@ Una librería de alertas JavaScript moderna, personalizable y con efectos visual
 ## NPM
 npm install rojeru-alert
 
-```
+```javascript
 // ES Modules
 import RojeruAlert from 'rojeru-alert';
 import 'rojeru-alert/dist/rojeru-alert.css';
@@ -58,7 +58,7 @@ require('rojeru-alert/dist/rojeru-alert.css');
 ```
 
 ## JavaScript (ES6+)
-```
+```javascript
 // Usando la instancia global
 alert.success('¡Éxito!', 'Todo funcionó perfectamente');
 
@@ -71,7 +71,7 @@ RojeruAlert.warning('Advertencia', 'Ten cuidado con esto');
 ```
 ## Ejemplos Completos 🎨
 
-```
+```javascript
 // Success
 RoAlert.success('¡Perfecto!', 'Los cambios se guardaron correctamente');
 
@@ -94,7 +94,7 @@ RoAlert.question('¿Estás seguro?', '¿Deseas eliminar este elemento?')
 ```
 
 ## Toast notifications
-```
+```javascript
 // Toast simple (desaparece en 3 segundos)
 RoAlert.toast('Mensaje guardado correctamente');
 
@@ -105,7 +105,7 @@ RoAlert.toast('Error al conectar', 5000, 'error');
 RoAlert.toast('Modo nocturno activado', 3000, 'info', 'dark');
 ```
 ## Sistema de stack (notificaciones)
-```
+```javascript
 // Notificación en esquina
 RoAlert.stack({
   message: 'Nuevo mensaje recibido',
@@ -119,7 +119,7 @@ RoAlert.stack({ message: 'Usuario conectado', type: 'success' });
 RoAlert.stack({ message: 'Descarga completada', type: 'success' });
 ```
 ## Formularios y prompts
-```
+```javascript
 // Prompt simple
 RoAlert.prompt({
   title: 'Ingresa tu nombre',
@@ -145,7 +145,7 @@ RoAlert.form({
 });
 ```
 ## Loading y progress
-```
+```javascript
 // Loading simple
 RoAlert.loading('Procesando', 'Por favor espera...');
 
@@ -169,7 +169,7 @@ setTimeout(() => loading.updateLoading(50), 1000);
 setTimeout(() => loading.updateLoading(100, '¡Completado!'), 2000);
 ```
 ## Countdown
-```
+```javascript
 // Temporizador
 RoAlert.countdown({
   title: 'Sesión expirando',
@@ -185,18 +185,18 @@ RoAlert.countdown({
 });
 ```
 ## Personalización 🎨
-```
+```javascript
 Cambiar idioma
 RoAlert.changeLanguage('es'); // Español
 RoAlert.changeLanguage('en'); // Inglés (default)
 ```
 
-```
+```javascript
 Habilitar/deshabilitar sonidos
 RoAlert.enableSounds(true); // Activado (default)
 RoAlert.enableSounds(false); // Desactivado
 ```
-```
+```javascript
 Temas personalizados
 // Registrar tema personalizado
 RoAlert.registerTheme('midnight', {
@@ -211,7 +211,7 @@ RoAlert.registerTheme('midnight', {
 
 // Usar tema personalizado
 RoAlert.success('¡Éxito!', 'Mensaje', {}, 'midnight');
-```
+```javascript
 ```
 Animaciones personalizadas
 RoAlert.show({
@@ -222,7 +222,7 @@ RoAlert.show({
   exitAnimation: 'bounce'
 });
 ```
-```
+```javascript
 Configuración global
 // Al cargar la librería
 window.RoAlert.changeLanguage('es');
@@ -248,7 +248,7 @@ progress(options): Barra de progreso
 countdown(options): Temporizador countdown
 ```
 ## Opciones disponibles
-```
+```javascript
 const options = {
   title: 'Título',           // Título de la alerta
   message: 'Mensaje',        // Contenido principal
@@ -269,7 +269,7 @@ const options = {
 ```
 
 ## React ✅
-```
+```javascript
 npm install rojeru-alert
 // App.jsx
 import React from 'react';
@@ -294,7 +294,7 @@ function App() {
 export default App;
 ```
 ## Hook personalizado para React
-```
+```javascript
 // hooks/useAlert.js
 import { useEffect, useRef } from 'react';
 import RojeruAlert from 'rojeru-alert';
@@ -335,7 +335,7 @@ function MyComponent() {
 }
 ```
 ## Context Provider para React
-```
+```javascript
 // context/AlertContext.jsx
 import React, { createContext, useContext, useRef } from 'react';
 import RojeruAlert from 'rojeru-alert';
@@ -377,7 +377,7 @@ function App() {
 }
 ```
 ## Vue.js 3 ✅
-```
+```javascript
 // plugins/rojeru-alert.js
 import RojeruAlert from 'rojeru-alert';
 import 'rojeru-alert/dist/rojeru-alert.css';
@@ -417,7 +417,7 @@ app.use(RojeruAlertPlugin);
 app.mount('#app');
 ```
 ## Uso en componentes Vue
-```
+```javascript
 <!-- Options API -->
 <template>
   <button @click="showSuccess">Mostrar Alerta</button>
@@ -452,7 +452,7 @@ const showAlert = () => {
 </script>
 ```
 ## Angular ✅
-```
+```javascript
 npm install rojeru-alert
 // services/alert.service.ts
 import { Injectable } from '@angular/core';
@@ -511,7 +511,7 @@ import { AlertService } from './services/alert.service';
 export class AppModule { }
 ```
 ## Uso en componente Angular
-```
+```javascript
 // app.component.ts
 import { Component } from '@angular/core';
 import { AlertService } from './services/alert.service';
