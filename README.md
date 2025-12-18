@@ -1,4 +1,4 @@
-# RojeruAlert V1.0.6🚀
+# RojeruAlert V1.0.7🚀
 
 Una librería de alertas JavaScript moderna, personalizable y con efectos visuales impresionantes.
 
