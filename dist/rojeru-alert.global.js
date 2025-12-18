@@ -893,52 +893,119 @@ var RojeruAlert = (function (exports) {
                 defaultValue = '',
                 placeholder = this.t('writeHere'),
                 type = 'info',
-                theme = 'light'
+                theme = 'light',
+                validation = null
             } = options;
 
             return new Promise((resolve) => {
+                // Crear un input temporal para capturar el valor
+                let capturedValue = defaultValue;
+                let isResolved = false;
+
                 const inputId = 'rojeru-alert-prompt-input-' + Date.now();
 
                 const alertConfig = {
                     title,
                     message: `${message}<div class="rojeru-alert-input-container">
-                    <input type="text" id="${inputId}" class="rojeru-alert-input"
-                           value="${defaultValue}" placeholder="${placeholder}">
-                </div>`,
+                <input type="text" id="${inputId}" class="rojeru-alert-input"
+                       value="${defaultValue}" placeholder="${placeholder}"
+                       autocomplete="off">
+            </div>`,
                     type,
                     theme,
                     showCancel: true,
                     confirmButtonText: this.t('accept'),
+                    cancelButtonText: this.t('cancel'),
+                    closeOnClickOutside: false,
                     callback: (confirmed) => {
-                        let value = '';
+                        if (isResolved) return false; // Prevenir múltiples resoluciones
+
                         if (confirmed) {
-                            const input = document.getElementById(inputId);
-                            value = input ? input.value : '';
+                            // Validación si existe
+                            if (validation && typeof validation === 'function') {
+                                const validationResult = validation(capturedValue);
+                                if (validationResult !== true) {
+                                    // Mostrar error pero mantener abierto
+                                    setTimeout(() => {
+                                        this.error(this.t('validationError'), validationResult);
+                                    }, 50);
+                                    return false; // No cerrar
+                                }
+                            }
                         }
 
+                        isResolved = true;
+
                         if (typeof callback === 'function') {
-                            callback(confirmed, value);
+                            callback(confirmed, capturedValue);
                         }
-                        resolve({ confirmed, value });
+
+                        // Resolver la promesa
+                        setTimeout(() => {
+                            resolve({ confirmed, value: capturedValue });
+                        }, 0);
+
+                        return true; // Permitir cierre
                     }
                 };
 
                 this.show(alertConfig);
 
+                // Configurar el input
                 setTimeout(() => {
                     const input = document.getElementById(inputId);
                     if (input) {
-                        input.focus();
-                        input.select();
+                        // Guardar valor en cada cambio
+                        const updateValue = () => {
+                            capturedValue = input.value;
+                        };
 
-                        input.addEventListener('keypress', (e) => {
+                        input.addEventListener('input', updateValue);
+                        input.addEventListener('change', updateValue);
+                        input.addEventListener('blur', updateValue);
+
+                        // Inicializar
+                        capturedValue = input.value;
+
+                        // Enter para enviar
+                        input.addEventListener('keydown', (e) => {
                             if (e.key === 'Enter') {
-                                const confirmButton = this.overlay.querySelector('.confirm');
-                                if (confirmButton) confirmButton.click();
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                // Actualizar valor final
+                                capturedValue = input.value;
+
+                                // Disparar confirmación
+                                const confirmButton = this.overlay.querySelector('.rojeru-alert-button.confirm');
+                                if (confirmButton) {
+                                    confirmButton.click();
+                                }
+                            }
+
+                            if (e.key === 'Escape') {
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                // Cancelar
+                                const cancelButton = this.overlay.querySelector('.rojeru-alert-button.cancel');
+                                if (cancelButton) {
+                                    cancelButton.click();
+                                }
                             }
                         });
+
+                        // Prevenir eventos del overlay
+                        ['click', 'mousedown', 'touchstart'].forEach(event => {
+                            input.addEventListener(event, (e) => {
+                                e.stopPropagation();
+                            });
+                        });
+
+                        input.focus();
+                        input.select();
                     }
-                }, 100);
+                }, 150); // Un poco más de delay para asegurar
             });
         }
 
@@ -948,75 +1015,275 @@ var RojeruAlert = (function (exports) {
                 fields = [],
                 confirmButtonText = this.t('submit'),
                 validation = null,
+                theme = 'light',
                 ...restOptions
             } = options;
 
-            let formHTML = '';
-            fields.forEach((field, index) => {
-                formHTML += `
-                <div class="rojeru-alert-field">
-                    <label for="field-${index}">${field.label}</label>
-                    <input type="${field.type || 'text'}"
-                           id="field-${index}"
-                           name="${field.name || ''}"
-                           placeholder="${field.placeholder || ''}"
-                           value="${field.value || ''}"
-                           ${field.required ? 'required' : ''}
-                           class="rojeru-alert-input">
-                </div>
-            `;
-            });
-
             return new Promise((resolve) => {
+                const formId = 'rojeru-form-' + Date.now();
+                let formData = {}; // Variable para almacenar datos
+                let isResolved = false;
+
+                // Construir HTML del formulario
+                let formHTML = '';
+                const fieldIds = []; // Array para guardar IDs de campos
+
+                fields.forEach((field, index) => {
+                    const fieldId = `${formId}-field-${index}`;
+                    fieldIds.push(fieldId); // Guardar ID
+                    const fieldType = field.type || 'text';
+
+                    if (fieldType === 'textarea') {
+                        formHTML += `
+                    <div class="rojeru-alert-field">
+                        <label for="${fieldId}">${field.label}</label>
+                        <textarea id="${fieldId}"
+                               name="${field.name || fieldId}"
+                               placeholder="${field.placeholder || ''}"
+                               ${field.required ? 'required' : ''}
+                               class="rojeru-alert-input rojeru-alert-textarea"
+                               rows="${field.rows || 4}">${field.value || ''}</textarea>
+                    </div>
+                `;
+                    } else if (fieldType === 'select') {
+                        let optionsHTML = '';
+                        if (field.options && Array.isArray(field.options)) {
+                            field.options.forEach(option => {
+                                const selected = option.value === field.value ? 'selected' : '';
+                                optionsHTML += `<option value="${option.value}" ${selected}>${option.label}</option>`;
+                            });
+                        }
+                        formHTML += `
+                    <div class="rojeru-alert-field">
+                        <label for="${fieldId}">${field.label}</label>
+                        <select id="${fieldId}"
+                               name="${field.name || fieldId}"
+                               ${field.required ? 'required' : ''}
+                               class="rojeru-alert-input rojeru-alert-select">
+                            ${optionsHTML}
+                        </select>
+                    </div>
+                `;
+                    } else {
+                        const inputType = fieldType === 'checkbox' || fieldType === 'radio' ? fieldType : 'text';
+                        const checkedAttr = field.value ? 'checked' : '';
+
+                        formHTML += `
+                    <div class="rojeru-alert-field">
+                        <label for="${fieldId}">${field.label}</label>
+                        <input type="${inputType}"
+                               id="${fieldId}"
+                               name="${field.name || fieldId}"
+                               placeholder="${field.placeholder || ''}"
+                               value="${field.value || ''}"
+                               ${field.required ? 'required' : ''}
+                               ${checkedAttr}
+                               class="rojeru-alert-input">
+                    </div>
+                `;
+                    }
+                });
+
                 const alertConfig = {
                     title,
-                    message: `<form class="rojeru-alert-form">${formHTML}</form>`,
+                    message: `<form id="${formId}" class="rojeru-alert-form">${formHTML}</form>`,
                     type: 'info',
+                    theme,
                     showCancel: true,
                     confirmButtonText,
-                    ...restOptions,
+                    closeOnClickOutside: false,
                     callback: (confirmed) => {
-                        if (confirmed) {
-                            const formData = {};
-                            let isValid = true;
+                        if (isResolved) return false;
 
-                            fields.forEach((field, index) => {
-                                const input = document.getElementById(`field-${index}`);
-                                if (input) {
-                                    formData[field.name || `field${index}`] = input.value;
+                        if (!confirmed) {
+                            isResolved = true;
+                            resolve({ confirmed: false, data: {} });
+                            return true;
+                        }
 
-                                    // Basic validation
-                                    if (field.required && !input.value.trim()) {
-                                        isValid = false;
-                                        input.classList.add('error');
-                                    } else {
-                                        input.classList.remove('error');
+                        // Recopilar datos desde la variable formData
+                        const finalData = { ...formData };
+                        let isValid = true;
+                        let errorMessage = '';
+                        let errorFieldId = null;
+
+                        // Validar cada campo
+                        fields.forEach((field, index) => {
+                            const fieldId = fieldIds[index];
+                            const value = finalData[field.name || fieldId] || '';
+
+                            // Validación básica de campo requerido
+                            if (field.required && !value.toString().trim()) {
+                                isValid = false;
+                                errorFieldId = fieldId;
+                                errorMessage = field.errorMessage || `${field.label} es requerido`;
+                            }
+
+                            // Validación específica del campo
+                            if (isValid && field.validation && typeof field.validation === 'function') {
+                                const validationResult = field.validation(value);
+                                if (validationResult !== true) {
+                                    isValid = false;
+                                    errorFieldId = fieldId;
+                                    errorMessage = validationResult;
+                                }
+                            }
+                        });
+
+                        // Validación personalizada global
+                        if (isValid && validation && typeof validation === 'function') {
+                            const validationResult = validation(finalData);
+                            if (validationResult !== true) {
+                                isValid = false;
+                                errorMessage = validationResult;
+                            }
+                        }
+
+                        if (!isValid) {
+                            // Mostrar error pero mantener el formulario abierto
+                            setTimeout(() => {
+                                this.error(this.t('validationError'), errorMessage);
+
+                                // Resaltar campo con error si existe
+                                if (errorFieldId) {
+                                    const errorField = document.getElementById(errorFieldId);
+                                    if (errorField) {
+                                        errorField.classList.add('error');
+                                        errorField.focus();
+
+                                        // Remover la clase de error después de 3 segundos
+                                        setTimeout(() => {
+                                            errorField.classList.remove('error');
+                                        }, 3000);
                                     }
                                 }
-                            });
+                            }, 50);
 
-                            if (!isValid) {
-                                this.error('Error', 'Please complete all required fields');
-                                return;
-                            }
-
-                            // Custom validation
-                            if (validation && typeof validation === 'function') {
-                                const validationResult = validation(formData);
-                                if (validationResult !== true) {
-                                    this.error(this.t('validationError'), validationResult);
-                                    return;
-                                }
-                            }
-
-                            resolve({ confirmed, data: formData });
-                        } else {
-                            resolve({ confirmed: false });
+                            return false; // No cerrar el formulario
                         }
+
+                        isResolved = true;
+                        resolve({ confirmed: true, data: finalData });
+                        return true; // Permitir cierre
                     }
                 };
 
                 this.show(alertConfig);
+
+                // Configurar eventos después de mostrar el formulario
+                setTimeout(() => {
+                    const formElement = document.getElementById(formId);
+                    if (!formElement) return;
+
+                    // Inicializar formData con valores por defecto
+                    fields.forEach((field, index) => {
+                        const fieldId = fieldIds[index];
+                        const input = formElement.querySelector(`#${fieldId}`);
+                        if (input) {
+                            const value = input.type === 'checkbox' ? input.checked : input.value;
+                            formData[field.name || fieldId] = value;
+
+                            // Escuchar cambios en cada campo
+                            const updateFieldValue = () => {
+                                const currentValue = input.type === 'checkbox' ? input.checked : input.value;
+                                formData[field.name || fieldId] = currentValue;
+                            };
+
+                            input.addEventListener('input', updateFieldValue);
+                            input.addEventListener('change', updateFieldValue);
+                            input.addEventListener('blur', updateFieldValue);
+
+                            // Para checkboxes y radios
+                            if (input.type === 'checkbox' || input.type === 'radio') {
+                                input.addEventListener('click', updateFieldValue);
+                            }
+                        }
+                    });
+
+                    // Prevenir eventos del overlay
+                    formElement.querySelectorAll('input, textarea, select').forEach(input => {
+                        ['click', 'mousedown', 'touchstart'].forEach(event => {
+                            input.addEventListener(event, (e) => {
+                                e.stopPropagation();
+                            });
+                        });
+
+                        // Manejar teclas especiales
+                        input.addEventListener('keydown', (e) => {
+                            e.stopPropagation();
+
+                            // Ctrl+Enter o Cmd+Enter para enviar
+                            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                                e.preventDefault();
+                                const confirmButton = this.overlay.querySelector('.rojeru-alert-button.confirm');
+                                if (confirmButton) confirmButton.click();
+                            }
+
+                            // Tab para navegar entre campos
+                            if (e.key === 'Tab') {
+                                e.stopPropagation(); // Permitir tab normal
+                            }
+                        });
+                    });
+
+                    // Auto-focus en el primer campo
+                    const firstInput = formElement.querySelector('input, textarea, select');
+                    if (firstInput) {
+                        firstInput.focus();
+                        if (firstInput.tagName === 'INPUT' && firstInput.type === 'text') {
+                            firstInput.select();
+                        }
+                    }
+
+                    // Manejar submit del formulario nativo
+                    formElement.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        // Actualizar todos los valores antes de enviar
+                        fields.forEach((field, index) => {
+                            const fieldId = fieldIds[index];
+                            const input = formElement.querySelector(`#${fieldId}`);
+                            if (input) {
+                                formData[field.name || fieldId] = input.type === 'checkbox' ? input.checked : input.value;
+                            }
+                        });
+
+                        const confirmButton = this.overlay.querySelector('.rojeru-alert-button.confirm');
+                        if (confirmButton) confirmButton.click();
+                    });
+
+                    // Configurar botones manualmente
+                    const confirmButton = this.overlay.querySelector('.rojeru-alert-button.confirm');
+                    const cancelButton = this.overlay.querySelector('.rojeru-alert-button.cancel');
+
+                    if (confirmButton) {
+                        // Guardar el click original
+                        confirmButton.onclick;
+                        confirmButton.onclick = null;
+
+                        confirmButton.addEventListener('click', (e) => {
+                            e.stopPropagation();
+
+                            // Actualizar todos los valores antes de procesar
+                            fields.forEach((field, index) => {
+                                const fieldId = fieldIds[index];
+                                const input = formElement.querySelector(`#${fieldId}`);
+                                if (input) {
+                                    formData[field.name || fieldId] = input.type === 'checkbox' ? input.checked : input.value;
+                                }
+                            });
+                        });
+                    }
+
+                    if (cancelButton) {
+                        cancelButton.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            formData = {}; // Limpiar datos
+                        });
+                    }
+
+                }, 150); // Un poco más de delay para formularios complejos
             });
         }
 
@@ -1490,7 +1757,7 @@ var RojeruAlert = (function (exports) {
     };
 
     // Versión de la librería
-    const VERSION = '1.0.0';
+    const VERSION = '1.0.6';
 
     // Instancia global pre-creada
     const globalInstance = new RojeruAlert();

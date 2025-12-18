@@ -1,4 +1,4 @@
-# RojeruAlert 🚀
+# RojeruAlert V1.0.6🚀
 
 Una librería de alertas JavaScript moderna, personalizable y con efectos visuales impresionantes.
 
@@ -11,7 +11,7 @@ Una librería de alertas JavaScript moderna, personalizable y con efectos visual
 - ✅ **Soporte multi-idioma**: Español e Inglés
 - ✅ **Sonidos**: opcionales para cada tipo
 - ✅ **Sistema de notificaciones**: stack (toasts)
-- ✅ **Formularios y prompts**: integrados
+- ✅ **Formularios y prompts**: integrados (Corregidos en esta versión)
 - ✅ **Loading y progress bars**: con spinners
 - ✅ **Countdowns**: temporizadores integrados
 - ✅ **Totalmente responsive**: se adapta a móviles

@@ -1,6 +1,6 @@
 {
   "name": "rojeru-alert",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Beautiful, customizable and framework-agnostic alert system for JavaScript with amazing visual effects",
   "main": "dist/rojeru-alert.cjs.js",
   "module": "dist/rojeru-alert.esm.js",
